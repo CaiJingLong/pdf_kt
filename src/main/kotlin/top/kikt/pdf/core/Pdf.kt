@@ -1,16 +1,23 @@
-package top.kikt.pdf
+package top.kikt.pdf.core
 
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.PdfPTable
 import com.itextpdf.text.pdf.PdfWriter
 import com.itextpdf.text.pdf.draw.LineSeparator
+import top.kikt.pdf.exts.setBold
+import top.kikt.pdf.exts.setItalic
+import top.kikt.pdf.exts.setStrikeThrough
+import top.kikt.pdf.exts.setUnderline
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
+import java.io.File
+import java.io.OutputStream
 
 /**
  * Wrapper IText, and provide some useful method.
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class Pdf(
     val pageSize: Rectangle = PageSize.A4,
     var baseFont: BaseFont = BaseFont.createFont(),
@@ -22,9 +29,7 @@ class Pdf(
      */
     var defaultFontSize: Float = 12f
 
-    private val margin = 0f
-
-    private val document = Document(pageSize, margin, margin, margin, margin)
+    private val document = Document(pageSize)
     private val outputStream = ByteArrayOutputStream()
     private val writer = PdfWriter.getInstance(document, outputStream)
 
@@ -48,13 +53,40 @@ class Pdf(
      * output the pdf data to [ByteArray].
      */
     fun toByteArray(): ByteArray {
+        if (document.isOpen) {
+            close()
+        }
         return outputStream.toByteArray()
     }
 
     /**
      * Make [Font] with [textSize] by [baseFont].
      */
-    fun getFont(textSize: Float): Font = Font(baseFont, textSize)
+
+    fun getFont(
+        textSize: Float,
+        color: BaseColor = baseColor,
+        isBold: Boolean = false,
+        isItalic: Boolean = false,
+        isUnderline: Boolean = false,
+        isStrikeThrough: Boolean = false
+    ): Font {
+        val font = Font(baseFont, textSize)
+        font.color = color
+        if (isBold) {
+            font.setBold()
+        }
+        if (isItalic) {
+            font.setItalic()
+        }
+        if (isUnderline) {
+            font.setUnderline()
+        }
+        if (isStrikeThrough) {
+            font.setStrikeThrough()
+        }
+        return font
+    }
 
     /**
      * New page.
@@ -93,20 +125,39 @@ class Pdf(
     /**
      * Add text of [Chunk] to [document]
      */
-    fun addText(text: String, textSize: Float = defaultFontSize, action: Chunk.() -> Unit = {}) {
+    fun addTextChunk(
+        text: String,
+        textSize: Float = defaultFontSize,
+        color: BaseColor = baseColor,
+        isBold: Boolean = false,
+        isItalic: Boolean = false,
+        isUnderline: Boolean = false,
+        isStrikeThrough: Boolean = false,
+        action: Chunk.(Font) -> Unit = {}
+    ) {
         val chunk = Chunk(text)
-        chunk.font = getFont(textSize)
-        chunk.action()
+        val font = getFont(textSize, color, isBold, isItalic, isUnderline, isStrikeThrough)
+        chunk.font = font
+        chunk.action(font)
         add(chunk)
     }
 
     /**
      * Add text of [Paragraph] to [document]
      */
-    fun addParagraph(textSize: Float = defaultFontSize, action: Paragraph.() -> Unit = {}) {
+    fun addParagraph(
+        textSize: Float = defaultFontSize,
+        color: BaseColor = baseColor,
+        isBold: Boolean = false,
+        isItalic: Boolean = false,
+        isUnderline: Boolean = false,
+        isStrikeThrough: Boolean = false,
+        action: Paragraph.(Font) -> Unit = {},
+    ) {
         val paragraph = Paragraph()
-        paragraph.font = getFont(textSize)
-        paragraph.action()
+        val font = getFont(textSize, color, isBold, isItalic, isUnderline, isStrikeThrough)
+        paragraph.font = font
+        paragraph.action(font)
         document.add(paragraph)
     }
 
@@ -167,8 +218,44 @@ class Pdf(
      *
      * The [PdfPTable] will be created by [builder].
      */
-    fun addTable(builder: Document.() -> PdfPTable) {
+    fun addTableWithDocument(builder: Document.() -> PdfPTable) {
         document.add(document.builder())
+    }
+
+    /**
+     * Add [PdfPTable] to [document].
+     *
+     * The [PdfPTable] will be created by [builder].
+     *
+     * The builder provide [PdfTableBuilder] to help user to create [PdfPTable].
+     */
+    fun addTable(
+        columnCount: Int,
+        builder: PdfTableBuilder.(PdfPTable) -> Unit
+    ) {
+        val pdfTable = PdfTableBuilder(this)
+            .apply {
+                this.columnCount = columnCount
+                builder(table)
+            }
+            .build()
+        add(pdfTable)
+    }
+
+    fun saveTo(file: File) {
+        file.parentFile.mkdirs()
+        val stream = file.outputStream()
+        stream.use {
+            saveTo(it)
+        }
+    }
+
+    fun saveTo(path: String) {
+        saveTo(File(path))
+    }
+
+    fun saveTo(outputStream: OutputStream) {
+        outputStream.write(toByteArray())
     }
 
 }

@@ -7,6 +7,7 @@ import com.itextpdf.text.PageSize.A4
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.PdfWriter
 import org.junit.jupiter.api.Test
+import top.kikt.pdf.core.Pdf
 import java.io.File
 
 class CreateDocumentTest {
@@ -46,21 +47,35 @@ class CreateDocumentTest {
         val font = Font(baseFont, 20f)
 
         pdf.open {
-            val margin = 120f
+            val margin = this.topMargin()
             setMargins(margin, margin, margin, margin)
         }
         pdf.addParagraph {
             add(Chunk("hello world", font))
         }
-        pdf.addText("hello world") {
+        pdf.addTextChunk("hello world") {
             setFont(font)
         }
-        pdf.addText("hello world") {
+        pdf.addTextChunk("hello world") {
             setFont(font)
         }
         pdf.addParagraph {
             add(Chunk("hello world", font))
         }
+
+        pdf.addTable(4) {
+            it.widthPercentage = 100f
+            for (i in 0..10) {
+                addRow {
+                    addText("index: $i")
+                    addText("我是内容1")
+                    addText("我是内容2")
+                    addText("我是内容3")
+                    addText("我是内容4")
+                }
+            }
+        }
+
         pdf.close()
 
         val sample2 = File(createDir, "sample2.pdf")

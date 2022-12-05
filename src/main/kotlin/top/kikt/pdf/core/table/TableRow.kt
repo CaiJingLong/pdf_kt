@@ -1,15 +1,17 @@
-package top.kikt.pdf.table
+package top.kikt.pdf.core.table
 
 import com.itextpdf.text.Image
 import com.itextpdf.text.Paragraph
 import com.itextpdf.text.pdf.PdfPCell
-import top.kikt.pdf.Pdf
+import top.kikt.pdf.ILogger
+import top.kikt.pdf.core.Pdf
+import top.kikt.pdf.core.PdfTableBuilder
 
 /**
  * Created by CaiJingLong on 2022-12-05.
  * Cells greater than the number of table columns will be ignored.
  */
-class TableRow(val pdf: Pdf) {
+class TableRow(val pdf: Pdf, val pdfTableBuilder: PdfTableBuilder) : ILogger {
 
     private var cells = ArrayList<PdfPCell>()
 
@@ -18,6 +20,10 @@ class TableRow(val pdf: Pdf) {
      * Use [config] to config the cell.
      */
     fun addCell(cell: PdfPCell, config: PdfPCell.() -> Unit = {}) {
+        if (cells.size >= pdfTableBuilder.columnCount) {
+            logger.warn("Current row has {} columns, the new cell will be ignored.", pdfTableBuilder.columnCount)
+        }
+
         cell.config()
         cells.add(cell)
     }

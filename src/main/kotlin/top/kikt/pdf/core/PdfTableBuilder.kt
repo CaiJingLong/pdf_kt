@@ -1,8 +1,8 @@
-package top.kikt.pdf
+package top.kikt.pdf.core
 
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.PdfPTable
-import top.kikt.pdf.table.TableRow
+import top.kikt.pdf.core.table.TableRow
 
 @Suppress("MemberVisibilityCanBePrivate")
 /**
@@ -20,16 +20,23 @@ class PdfTableBuilder(val pdf: Pdf) {
     private var rows = ArrayList<TableRow>()
 
     /**
+     * The table element of [Document].
+     */
+    val table by lazy { PdfPTable(columnCount) }
+
+    /**
      * Make [TableRow] with [rowBuilder], and add it to table.
      */
-    fun addRow(rowBuilder: Pdf.() -> TableRow) {
-        val row = pdf.rowBuilder()
+    fun addRow(rowBuilder: TableRow.(Pdf) -> Unit = {}) {
+        val row = TableRow(pdf, this)
+        row.rowBuilder(pdf)
         rows.add(row)
     }
 
-    fun build(): PdfPTable {
-        val table = PdfPTable(columnCount)
-
+    /**
+     * Build the table.
+     */
+    fun build(builder: (PdfPTable) -> Unit = {}): PdfPTable {
         rows.forEach {
             val cells = it.build()
             cells.forEachIndexed { index, pdfPCell ->
@@ -44,6 +51,8 @@ class PdfTableBuilder(val pdf: Pdf) {
                 }
             }
         }
+
+        builder(table)
 
         return table
     }
