@@ -2,6 +2,20 @@
 
 Wrapper itextpdf 5.x for Kotlin, support dsl to generate pdf.
 
+![Maven Central](https://img.shields.io/maven-central/v/top.kikt/pdf)
+
+## Include
+
+[show version list](https://search.maven.org/artifact/top.kikt/pdf)
+
+```groovy
+
+dependencies {
+    implmentation("top.kikt:excel:$version")
+}
+
+```
+
 ## A PDF create library for Kotlin
 
 ### Usage
