@@ -65,8 +65,32 @@ class PdfDslTest {
             }
 
             close()
-        }.saveTo("sample/dsl/output.pdf")
+        }.saveTo("sample/dsl/text.pdf")
     }
 
+    @Test
+    fun createTable() {
+        pdf {
+            open()
+            addTable(3) {
+                addRow {
+                    addText("1")
+                    addText("2")
+                    addText("3")
+                }
+                addRow {
+                    addText("4")
+                    addText("5")
+                    addText("6")
+                }
+                addRow {
+                    addText("7")
+                    addText("8")
+                    addText("9")
+                }
+            }
+            close()
+        }.saveTo("sample/dsl/table.pdf")
+    }
 
 }
