@@ -4,13 +4,18 @@ import com.itextpdf.text.*
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.PdfPTable
 import com.itextpdf.text.pdf.PdfWriter
+import com.itextpdf.text.pdf.draw.LineSeparator
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 
 /**
  * Wrapper IText, and provide some useful method.
  */
-class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.createFont()) : Closeable {
+class Pdf(
+    val pageSize: Rectangle = PageSize.A4,
+    var baseFont: BaseFont = BaseFont.createFont(),
+    var baseColor: BaseColor = BaseColor.BLACK,
+) : Closeable {
 
     /**
      * The default font size.
@@ -45,6 +50,11 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     fun toByteArray(): ByteArray {
         return outputStream.toByteArray()
     }
+
+    /**
+     * Make [Font] with [textSize] by [baseFont].
+     */
+    fun getFont(textSize: Float): Font = Font(baseFont, textSize)
 
     /**
      * New page.
@@ -125,6 +135,34 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     }
 
     /**
+     * Get width of [pageSize].
+     */
+    fun getWidth(): Float {
+        return pageSize.width
+    }
+
+    /**
+     * Get height of [pageSize].
+     */
+    fun getHeight(): Float {
+        return pageSize.height
+    }
+
+    /**
+     * Add LineSeparator to [document].
+     */
+    fun addLine(height: Float = 1.5f, percentage: Float = 100f, action: LineSeparator.() -> Unit = {}) {
+        val lineSeparator = LineSeparator()
+
+        lineSeparator.lineColor = baseColor
+        lineSeparator.lineWidth = height
+        lineSeparator.percentage = percentage
+
+        lineSeparator.action()
+        document.add(lineSeparator)
+    }
+
+    /**
      * Add [PdfPTable] to [document].
      *
      * The [PdfPTable] will be created by [builder].
@@ -132,7 +170,5 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     fun addTable(builder: Document.() -> PdfPTable) {
         document.add(document.builder())
     }
-
-    fun getFont(textSize: Float): Font = Font(baseFont, textSize)
 
 }
