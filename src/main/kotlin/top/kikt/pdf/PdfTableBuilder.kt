@@ -1,11 +1,16 @@
 package top.kikt.pdf
 
-import com.itextpdf.text.Paragraph
+import com.itextpdf.text.*
 import com.itextpdf.text.pdf.PdfPTable
 import top.kikt.pdf.table.TableRow
 
 @Suppress("MemberVisibilityCanBePrivate")
-class PdfTableBuilder {
+/**
+ * Created by CaiJingLong on 2022-12-05.
+ *
+ * Build a table for [Document].
+ */
+class PdfTableBuilder(val pdf: Pdf) {
 
     /**
      *  The table.
@@ -14,7 +19,11 @@ class PdfTableBuilder {
 
     private var rows = ArrayList<TableRow>()
 
-    fun addRow(row: TableRow) {
+    /**
+     * Make [TableRow] with [rowBuilder], and add it to table.
+     */
+    fun addRow(rowBuilder: Pdf.() -> TableRow) {
+        val row = pdf.rowBuilder()
         rows.add(row)
     }
 

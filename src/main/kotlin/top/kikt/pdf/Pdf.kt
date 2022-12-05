@@ -12,6 +12,11 @@ import java.io.Closeable
  */
 class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.createFont()) : Closeable {
 
+    /**
+     * The default font size.
+     */
+    var defaultFontSize: Float = 12f
+
     private val margin = 0f
 
     private val document = Document(pageSize, margin, margin, margin, margin)
@@ -70,16 +75,17 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     /**
      * Add [Element] to [document]
      */
-    fun add(element: Element) {
+    fun add(element: Element, action: Pdf.() -> Unit = {}) {
+        action()
         document.add(element)
     }
 
     /**
-     * Add text of [Trunk] to [document]
+     * Add text of [Chunk] to [document]
      */
-    fun addText(text: String, textSize: Float = 12f, action: Chunk.() -> Unit = {}) {
+    fun addText(text: String, textSize: Float = defaultFontSize, action: Chunk.() -> Unit = {}) {
         val chunk = Chunk(text)
-        chunk.font = Font(baseFont, textSize)
+        chunk.font = getFont(textSize)
         chunk.action()
         add(chunk)
     }
@@ -87,11 +93,35 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     /**
      * Add text of [Paragraph] to [document]
      */
-    fun addParagraph(textSize: Float = 12f, action: Paragraph.() -> Unit = {}) {
+    fun addParagraph(textSize: Float = defaultFontSize, action: Paragraph.() -> Unit = {}) {
         val paragraph = Paragraph()
-        paragraph.font = Font(baseFont, textSize)
+        paragraph.font = getFont(textSize)
         paragraph.action()
         document.add(paragraph)
+    }
+
+    /**
+     * Add [Image] to [document]
+     */
+    fun <T : Image> addImage(image: T, action: T.() -> Unit = {}) {
+        image.action()
+        document.add(image)
+    }
+
+    /**
+     * Add [PdfPTable] to [document] with [filePath].
+     */
+    fun addImage(filePath: String, action: Image.() -> Unit = {}) {
+        val image = Image.getInstance(filePath)
+        addImage(image, action)
+    }
+
+    /**
+     * Add [PdfPTable] to [document] with [bytes].
+     */
+    fun addImage(bytes: ByteArray, action: Image.() -> Unit = {}) {
+        val image = Image.getInstance(bytes)
+        addImage(image, action)
     }
 
     /**
@@ -102,4 +132,7 @@ class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.c
     fun addTable(builder: Document.() -> PdfPTable) {
         document.add(document.builder())
     }
+
+    fun getFont(textSize: Float): Font = Font(baseFont, textSize)
+
 }
