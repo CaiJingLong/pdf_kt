@@ -2,6 +2,7 @@ package top.kikt.pdf.core
 
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.PdfPTable
+import top.kikt.pdf.ILogger
 import top.kikt.pdf.core.table.TableRow
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -10,19 +11,14 @@ import top.kikt.pdf.core.table.TableRow
  *
  * Build a table for [Document].
  */
-class PdfTableBuilder(val pdf: Pdf) {
-
-    /**
-     *  The table.
-     */
-    var columnCount = 1
+class PdfTableBuilder(val pdf: Pdf, var columnCount: Int) : ILogger {
 
     private var rows = ArrayList<TableRow>()
 
     /**
      * The table element of [Document].
      */
-    val table by lazy { PdfPTable(columnCount) }
+    val table by lazy { PdfPTable(columnCount).apply(pdf.tableDefaultConfig) }
 
     /**
      * Make [TableRow] with [rowBuilder], and add it to table.
@@ -57,4 +53,7 @@ class PdfTableBuilder(val pdf: Pdf) {
         return table
     }
 
+    fun row(config: TableRow.(Pdf) -> Unit) {
+        addRow(config)
+    }
 }

@@ -2,6 +2,7 @@ package top.kikt.pdf.core
 
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.BaseFont
+import com.itextpdf.text.pdf.PdfPCell
 import com.itextpdf.text.pdf.PdfPTable
 import com.itextpdf.text.pdf.PdfWriter
 import com.itextpdf.text.pdf.draw.LineSeparator
@@ -17,17 +18,38 @@ import java.io.OutputStream
 /**
  * Wrapper IText, and provide some useful method.
  */
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class Pdf(
+    /**
+     * The page size of pdf.
+     */
     val pageSize: Rectangle = PageSize.A4,
-    var baseFont: BaseFont = BaseFont.createFont(),
-    var baseColor: BaseColor = BaseColor.BLACK,
-) : Closeable {
 
     /**
      * The default font size.
      */
-    var defaultFontSize: Float = 12f
+    var defaultFontSize: Float = 12f,
+
+    /**
+     * The default font.
+     */
+    var baseFont: BaseFont = BaseFont.createFont(),
+
+    /**
+     * The default color.
+     */
+    var baseColor: BaseColor = BaseColor.BLACK,
+
+    /**
+     * Table defaultConfig
+     */
+    var tableDefaultConfig: PdfPTable.() -> Unit = {},
+
+    /**
+     * Cell defaultConfig
+     */
+    var cellDefaultConfig: PdfPCell.() -> Unit = {},
+) : Closeable {
 
     private val document = Document(pageSize)
     private val outputStream = ByteArrayOutputStream()
@@ -233,7 +255,7 @@ class Pdf(
         columnCount: Int,
         builder: PdfTableBuilder.(PdfPTable) -> Unit
     ) {
-        val pdfTable = PdfTableBuilder(this)
+        val pdfTable = PdfTableBuilder(this, columnCount)
             .apply {
                 this.columnCount = columnCount
                 builder(table)
@@ -258,4 +280,57 @@ class Pdf(
         outputStream.write(toByteArray())
     }
 
+
+    fun table(
+        columnCount: Int,
+        config: PdfTableBuilder.() -> Unit,
+    ) {
+        val table = PdfTableBuilder(this, columnCount)
+        table.config()
+        add(table.build())
+    }
+
+    fun chunk(
+        text: String,
+        fontSize: Float = defaultFontSize,
+        color: BaseColor = baseColor,
+        builder: Chunk.(Font) -> Unit = {},
+    ) {
+        val font = getFont(fontSize).apply {
+            this.color = color
+        }
+        val chunk = Chunk(text, font)
+        chunk.builder(font)
+        add(chunk)
+    }
+
+    fun text(
+        text: String,
+        fontSize: Float = defaultFontSize,
+        color: BaseColor = baseColor,
+        builder: Paragraph.(Font) -> Unit = {},
+    ) {
+        val font = getFont(fontSize).apply {
+            this.color = color
+        }
+        val paragraph = Paragraph(text, font)
+        paragraph.builder(font)
+        add(paragraph)
+    }
+
+    fun paragraph(
+        text: String,
+        fontSize: Float = defaultFontSize,
+        color: BaseColor = baseColor,
+        builder: Paragraph.(Font) -> Unit = {},
+    ) = text(text, fontSize, color, builder)
+
+    fun line(
+        width: Float = 100f,
+        height: Float = 1f,
+        color: BaseColor = baseColor,
+    ) {
+        val line = LineSeparator(1f, width, color, Element.ALIGN_CENTER, -height)
+        add(line)
+    }
 }

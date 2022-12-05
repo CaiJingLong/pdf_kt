@@ -11,6 +11,7 @@ import top.kikt.pdf.core.PdfTableBuilder
  * Created by CaiJingLong on 2022-12-05.
  * Cells greater than the number of table columns will be ignored.
  */
+@Suppress("unused")
 class TableRow(val pdf: Pdf, val pdfTableBuilder: PdfTableBuilder) : ILogger {
 
     private var cells = ArrayList<PdfPCell>()
@@ -41,10 +42,17 @@ class TableRow(val pdf: Pdf, val pdfTableBuilder: PdfTableBuilder) : ILogger {
         addCell(cell)
     }
 
-    fun addImage(image: Image, action: PdfPCell.() -> Unit = {}) {
+    fun addImage(image: Image, action: PdfPCell.(Image) -> Unit = {}) {
         val pCell = PdfPCell(image)
-        action(pCell)
+        action(pCell, image)
         cells.add(pCell)
+    }
+
+    fun cell(config: CellBuilder.() -> Unit) {
+        val cell = CellBuilder(this)
+            .apply(config)
+            .build()
+        addCell(cell)
     }
 
     fun build(): List<PdfPCell> {

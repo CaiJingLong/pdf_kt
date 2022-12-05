@@ -1,7 +1,9 @@
 package top.kikt.pdf
 
+import com.itextpdf.text.Paragraph
 import org.junit.jupiter.api.Test
 import top.kikt.pdf.dsl.pdf
+import top.kikt.pdf.dsl.usePdf
 
 class PdfDslTest {
 
@@ -70,26 +72,35 @@ class PdfDslTest {
 
     @Test
     fun createTable() {
-        pdf {
-            open()
-            addTable(3) {
-                addRow {
-                    addText("1")
-                    addText("2")
-                    addText("3")
+        usePdf {
+            newPage()
+            table(3) {
+                row {
+                    cell {
+                        text("1")
+                        paragraph {
+                            it.add(Paragraph("p1"))
+                            it.add(Paragraph("p2"))
+                            it.add(Paragraph("p3"))
+                        }
+                    }
+                    cell {
+                        text("2")
+                    }
+                    cell {
+                        text("3")
+                    }
                 }
-                addRow {
-                    addText("4")
-                    addText("5")
-                    addText("6")
-                }
-                addRow {
-                    addText("7")
-                    addText("8")
-                    addText("9")
+                row {
+                    cell { text("10") }
+                    cell {
+                        image("sample/src.png") {
+                            setPadding(10f)
+                            it.scalePercent(20f)
+                        }
+                    }
                 }
             }
-            close()
         }.saveTo("sample/dsl/table.pdf")
     }
 
