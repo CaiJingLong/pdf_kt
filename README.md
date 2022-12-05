@@ -96,3 +96,10 @@ pdf {
     close()
 }.saveTo("sample/dsl/table.pdf")
 ```
+
+## LICENSE
+
+AGPL-3.0
+
+Because this project is based on itextpdf, so it is also licensed under AGPLv3.
+
