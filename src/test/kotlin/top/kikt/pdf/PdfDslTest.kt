@@ -1,5 +1,6 @@
 package top.kikt.pdf
 
+import com.itextpdf.text.Element
 import com.itextpdf.text.Paragraph
 import org.junit.jupiter.api.Test
 import top.kikt.pdf.dsl.pdf
@@ -104,4 +105,44 @@ class PdfDslTest {
         }.saveTo("sample/dsl/table.pdf")
     }
 
+    @Test
+    fun createPdfParagraph() {
+        usePdf {
+            text("Align center") {
+                alignment = Element.ALIGN_CENTER
+            }
+
+            line()
+
+            text("Align right") {
+                alignment = Element.ALIGN_RIGHT
+            }
+
+            line()
+
+            text("Align left") {
+                alignment = Element.ALIGN_LEFT
+            }
+
+            line()
+
+            text("Align justify") {
+                alignment = Element.ALIGN_JUSTIFIED
+            }
+
+            line()
+
+            val longText = "Long text ".repeat(15)
+
+            text("Indentation left: $longText") {
+                indentationLeft = 20f
+            }
+
+            line()
+            text("Indentation right: $longText") {
+                indentationRight = 20f
+            }
+
+        }.saveTo("sample/dsl/paragraph.pdf")
+    }
 }

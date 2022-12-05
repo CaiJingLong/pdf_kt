@@ -10,10 +10,7 @@ import top.kikt.pdf.exts.setBold
 import top.kikt.pdf.exts.setItalic
 import top.kikt.pdf.exts.setStrikeThrough
 import top.kikt.pdf.exts.setUnderline
-import java.io.ByteArrayOutputStream
-import java.io.Closeable
-import java.io.File
-import java.io.OutputStream
+import java.io.*
 
 /**
  * Wrapper IText, and provide some useful method.
@@ -332,5 +329,34 @@ class Pdf(
     ) {
         val line = LineSeparator(1f, width, color, Element.ALIGN_CENTER, -height)
         add(line)
+    }
+
+    fun image(
+        image: Image,
+        builder: Image.() -> Unit = {},
+    ) {
+        image.builder()
+        add(image)
+    }
+
+    fun image(
+        bytes: ByteArray,
+        builder: Image.() -> Unit = {},
+    ) {
+        image(Image.getInstance(bytes), builder)
+    }
+
+    fun image(
+        path: String,
+        builder: Image.() -> Unit = {},
+    ) {
+        image(Image.getInstance(path), builder)
+    }
+
+    fun image(
+        inputStream: InputStream,
+        builder: Image.() -> Unit = {},
+    ) {
+        image(Image.getInstance(inputStream.readBytes()), builder)
     }
 }
