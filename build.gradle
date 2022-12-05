@@ -1,9 +1,14 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+    id "com.vanniktech.maven.publish" version "0.22.0"
 }
 
 group = 'top.kikt'
-version = '1.0-SNAPSHOT'
+version = '1.0.0'
+
+if (ext.has('is_snapshot') && ext.get('is_snapshot') == 'true') {
+    version = "$version-SNAPSHOT"
+}
 
 repositories {
     mavenCentral()
@@ -36,4 +41,57 @@ compileKotlin {
 
 compileTestKotlin {
     kotlinOptions.jvmTarget = '1.8'
+}
+
+// maven central
+
+// publish
+mavenPublishing {
+
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.S01, true)
+    signAllPublications()
+
+    def repoName = "pdf"
+    def desc = "PDF utils for kotlin, to wrapper itextpdf 5.x api."
+
+    def licenseUrl = "https://www.gnu.org/licenses/agpl-3.0.html"
+
+    def author = "CaiJingLong"
+    def repoUrl = "https://github.com/CaiJingLong/pdf_kt"
+    def gitUrl = "${repoUrl}.git"
+
+    pom {
+        name = repoName
+        description = desc
+        inceptionYear = "2022"
+        url = repoUrl
+        licenses {
+            license {
+                name = "GNU Affero General Public License v3"
+                url = licenseUrl
+                distribution = licenseUrl
+            }
+        }
+        developers {
+            developer {
+                id = author
+                name = author
+                url = "https://github.com/$author/"
+            }
+        }
+        scm {
+            url = repoUrl
+            connection = gitUrl
+            developerConnection = gitUrl
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "BuildDir"
+            url = "$buildDir/repoLocal"
+        }
+    }
 }
