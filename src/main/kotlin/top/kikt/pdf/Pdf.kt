@@ -10,18 +10,13 @@ import java.io.Closeable
 /**
  * Wrapper IText, and provide some useful method.
  */
-class Pdf(pageSize: Rectangle = PageSize.A4) : Closeable {
+class Pdf(pageSize: Rectangle = PageSize.A4, val baseFont: BaseFont = BaseFont.createFont()) : Closeable {
 
     private val margin = 0f
 
     private val document = Document(pageSize, margin, margin, margin, margin)
     private val outputStream = ByteArrayOutputStream()
     private val writer = PdfWriter.getInstance(document, outputStream)
-
-    /**
-     * The document base font.
-     */
-    var baseFont = BaseFont.createFont()
 
     /**
      * Open the document.
