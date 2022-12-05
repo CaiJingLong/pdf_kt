@@ -47,7 +47,7 @@ compileTestKotlin {
 
 // publish
 mavenPublishing {
-
+    //noinspection UnnecessaryQualifiedReference
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.S01, true)
     signAllPublications()
 
