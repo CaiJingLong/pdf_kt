@@ -1,6 +1,7 @@
 package top.kikt.pdf.core
 
 import com.itextpdf.text.*
+import com.itextpdf.text.pdf.PdfPCell
 import com.itextpdf.text.pdf.PdfPTable
 import top.kikt.pdf.ILogger
 import top.kikt.pdf.core.table.TableRow
@@ -19,6 +20,12 @@ class PdfTableBuilder(val pdf: Pdf, var columnCount: Int) : ILogger {
      * The table element of [Document].
      */
     val table by lazy { PdfPTable(columnCount).apply(pdf.tableDefaultConfig) }
+
+    var everyCellConfig: PdfPCell.() -> Unit = {}
+
+    fun configCell(config: PdfPCell.() -> Unit) {
+        everyCellConfig = config
+    }
 
     /**
      * Make [TableRow] with [rowBuilder], and add it to table.
@@ -43,7 +50,10 @@ class PdfTableBuilder(val pdf: Pdf, var columnCount: Int) : ILogger {
             }
             if (cells.size < columnCount) {
                 for (i in 0 until columnCount - cells.size) {
-                    table.addCell(Paragraph(""))
+                    val paragraph = Paragraph("")
+                    val cell = PdfPCell(paragraph)
+                    cell.everyCellConfig()
+                    table.addCell(cell)
                 }
             }
         }

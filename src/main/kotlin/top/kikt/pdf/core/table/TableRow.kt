@@ -48,10 +48,11 @@ class TableRow(val pdf: Pdf, val pdfTableBuilder: PdfTableBuilder) : ILogger {
         cells.add(pCell)
     }
 
-    fun cell(config: CellBuilder.() -> Unit) {
+    fun cell(config: CellBuilder.(PdfPCell) -> Unit) {
         val cell = CellBuilder(this)
-            .apply(config)
+            .apply { config(config) }
             .build()
+
         addCell(cell)
     }
 

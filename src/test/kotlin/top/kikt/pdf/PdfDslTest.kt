@@ -5,6 +5,7 @@ import com.itextpdf.text.Paragraph
 import org.junit.jupiter.api.Test
 import top.kikt.pdf.dsl.pdf
 import top.kikt.pdf.dsl.usePdf
+import top.kikt.pdf.exts.setBorderAll
 
 class PdfDslTest {
 
@@ -76,6 +77,9 @@ class PdfDslTest {
         usePdf {
             newPage()
             table(3) {
+                configCell {
+                    setBorderAll()
+                }
                 row {
                     cell {
                         text("1")

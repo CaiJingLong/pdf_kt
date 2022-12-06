@@ -12,6 +12,10 @@ class CellBuilder(private val tableRow: TableRow) {
 
     private val cell = PdfPCell()
 
+    init {
+        tableRow.pdfTableBuilder.everyCellConfig(cell)
+    }
+
     fun text(
         text: String,
         textSize: Float = tableRow.pdf.defaultFontSize,
@@ -57,7 +61,12 @@ class CellBuilder(private val tableRow: TableRow) {
         }
     }
 
+    fun config(config: CellBuilder.(PdfPCell) -> Unit) {
+        config(this, cell)
+    }
+
     fun build(): PdfPCell {
         return cell
     }
+
 }
