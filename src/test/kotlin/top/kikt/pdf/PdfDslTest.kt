@@ -112,6 +112,7 @@ class PdfDslTest {
                 alignment = Element.ALIGN_CENTER
             }
 
+            space(height = 10)
             line()
 
             text("Align right") {

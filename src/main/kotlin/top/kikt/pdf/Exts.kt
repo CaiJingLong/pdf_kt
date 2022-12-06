@@ -1,5 +1,6 @@
 package top.kikt.pdf
 
+
 interface ILogger {
 
     val logger: org.slf4j.Logger

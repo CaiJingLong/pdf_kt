@@ -1,10 +1,7 @@
 package top.kikt.pdf.core
 
 import com.itextpdf.text.*
-import com.itextpdf.text.pdf.BaseFont
-import com.itextpdf.text.pdf.PdfPCell
-import com.itextpdf.text.pdf.PdfPTable
-import com.itextpdf.text.pdf.PdfWriter
+import com.itextpdf.text.pdf.*
 import com.itextpdf.text.pdf.draw.LineSeparator
 import top.kikt.pdf.exts.setBold
 import top.kikt.pdf.exts.setItalic
@@ -49,8 +46,19 @@ class Pdf(
 ) : Closeable {
 
     private val document = Document(pageSize)
+    private val pdf = PdfDocumentImpl()
+    private val writer: PdfWriter
     private val outputStream = ByteArrayOutputStream()
-    private val writer = PdfWriter.getInstance(document, outputStream)
+
+    init {
+        document.addDocListener(pdf)
+        writer = PdfWriterImpl(pdf, outputStream)
+        pdf.addWriter(writer)
+    }
+
+    companion object {
+        val transparentColor = BaseColor(0, 0, 0, 0)
+    }
 
     /**
      * Open the document.
@@ -136,8 +144,8 @@ class Pdf(
     /**
      * Add [Element] to [document]
      */
-    fun add(element: Element, action: Pdf.() -> Unit = {}) {
-        action()
+    fun <T : Element> add(element: T, action: T.(Pdf) -> Unit = {}) {
+        element.action(this)
         document.add(element)
     }
 
@@ -261,6 +269,9 @@ class Pdf(
         add(pdfTable)
     }
 
+    /**
+     * Save pdf to [file]
+     */
     fun saveTo(file: File) {
         file.parentFile.mkdirs()
         val stream = file.outputStream()
@@ -269,15 +280,25 @@ class Pdf(
         }
     }
 
+    /**
+     * Save pdf to [path]
+     */
     fun saveTo(path: String) {
         saveTo(File(path))
     }
 
+    /**
+     * Save pdf to [outputStream].
+     */
     fun saveTo(outputStream: OutputStream) {
         outputStream.write(toByteArray())
     }
 
-
+    /**
+     * Dsl
+     *
+     * Add table
+     */
     fun table(
         columnCount: Int,
         config: PdfTableBuilder.() -> Unit,
@@ -287,6 +308,12 @@ class Pdf(
         add(table.build())
     }
 
+    /**
+     *
+     * DSL
+     *
+     * Add chunk
+     */
     fun chunk(
         text: String,
         fontSize: Float = defaultFontSize,
@@ -301,6 +328,11 @@ class Pdf(
         add(chunk)
     }
 
+    /**
+     * DSL
+     *
+     * Add text
+     */
     fun text(
         text: String,
         fontSize: Float = defaultFontSize,
@@ -315,6 +347,11 @@ class Pdf(
         add(paragraph)
     }
 
+    /**
+     * DSL
+     *
+     * add paragraph
+     */
     fun paragraph(
         text: String,
         fontSize: Float = defaultFontSize,
@@ -322,6 +359,48 @@ class Pdf(
         builder: Paragraph.(Font) -> Unit = {},
     ) = text(text, fontSize, color, builder)
 
+
+    /**
+     * DSL
+     *
+     * add rectangle
+     */
+    fun rectangle(
+        width: Float,
+        height: Float,
+        color: BaseColor = baseColor,
+        builder: Rectangle.() -> Unit = {},
+    ) {
+        add(Rectangle(width, height)) {
+            this.backgroundColor = color
+            builder()
+        }
+    }
+
+    /**
+     * Dsl
+     *
+     * add space with [width] and [height].
+     */
+    fun space(width: Int = 1, height: Int = 1) {
+        val emptyImage = Image.getInstance(width, height, ByteArray(0), ByteArray(0))
+        add(emptyImage)
+    }
+
+    /**
+     * DSL
+     *
+     * New line for pdf.
+     */
+    fun newLine() {
+        pdf.newLine()
+    }
+
+    /**
+     * DSL
+     *
+     * draw a line to the pdf.
+     */
     fun line(
         width: Float = 100f,
         height: Float = 1f,
@@ -331,6 +410,11 @@ class Pdf(
         add(line)
     }
 
+    /**
+     * DSL
+     *
+     * Add [image] to pdf.
+     */
     fun image(
         image: Image,
         builder: Image.() -> Unit = {},
@@ -339,6 +423,11 @@ class Pdf(
         add(image)
     }
 
+    /**
+     * DSL
+     *
+     * add image with [bytes].
+     */
     fun image(
         bytes: ByteArray,
         builder: Image.() -> Unit = {},
@@ -346,6 +435,11 @@ class Pdf(
         image(Image.getInstance(bytes), builder)
     }
 
+    /**
+     * DSL
+     *
+     * add image with file [path].
+     */
     fun image(
         path: String,
         builder: Image.() -> Unit = {},
@@ -353,6 +447,13 @@ class Pdf(
         image(Image.getInstance(path), builder)
     }
 
+    /**
+     * DSL
+     *
+     * add image with [inputStream].
+     *
+     * user need close it.
+     */
     fun image(
         inputStream: InputStream,
         builder: Image.() -> Unit = {},
