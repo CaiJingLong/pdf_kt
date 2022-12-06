@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'top.kikt'
-version = '1.0.0'
+version = '1.1.0'
 
 if (ext.has('is_snapshot') && ext.get('is_snapshot') == 'true') {
     version = "$version-SNAPSHOT"
